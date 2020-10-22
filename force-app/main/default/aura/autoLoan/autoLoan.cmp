@@ -1,0 +1,159 @@
+<aura:component access="GLOBAL" implements="flexipage:availableForAllPageTypes, force:hasRecordId, force:appHostable" controller="AutoLoanController">
+    <aura:attribute name="accountData" type="Account" default="{ 'sobjectType': 'Account','Name': ''}"/>
+    <aura:attribute name="contactData" type="Contact" default="{ 'sobjectType': 'Contact','LastName': ''}"/>
+    <aura:attribute name="opportunityData" type="Opportunity" default="{ 'sobjectType': 'Opportunity','StageName' : 'prospecting'}"/>
+    <aura:attribute name="showAccount" type="boolean" default="true"/> '
+    <aura:attribute name="showContact" type="boolean" default="false"/> 
+    <aura:attribute name="showOpportunity" type="boolean" default="false"/>
+    <aura:attribute name="setMessage" type="String"/> 
+    <aura:attribute name="showError" type="boolean" default="false"/>
+    <aura:attribute name="showData" type="boolean" default="false"/>
+    <aura:attribute name="message" type="String" default="NoError"/> 
+    
+    <aura:html tag="style">
+        .cmn_error_msg{font-size:13px; color: rgb(194, 57, 52);}
+        .cmn_message{font-size:13px; color: green; }
+        .cmn_mandatory_indicator { color: rgb(194, 57, 52); }
+        html body.sfdcBody{padding:0!important}
+        .slds-config-form{max-width:700px}
+        .slds-config-form .slds-form-element{margin-bottom:0.9rem;align-items:left}
+        .slds-config-form .slds-form-element__label{font-weight:700; min-width:300px; text-align:right;color:#16325c}
+        .slds-config-form .slds-form-element__control{width:70%}
+        .config-heading{margin-top:.75rem}
+        .config-table-details .slds-table tr label{font-weight:700;color:#333}
+        .config-setup-icon{background:#f2cf5b;padding:5px}
+        .config-setup-icon .slds-button__icon{fill:#fff}
+        .adapetr-config-sec{background:#fff}  
+        .slds-page-header.adapetr-header{border-radius:.25rem .25rem 0 0;}   
+        .adapetr-config-sec{padding:1rem;}
+        .adapetr-config-sec h3{padding-bottom:.8rem}
+        .config-table-details.slds-box{margin-bottom:1rem;padding:0.5rem 1rem 1rem}   
+        .config-table-details .slds-table td{padding: .45rem 0;}
+        .adapetr-config-main{background:#fff; border-radius:.25rem}
+        .config-table-details .common-heading{padding-bottom:0.5rem}
+        .config-url-info{padding-top:0.8rem; align-items: center;}
+        .config-account-mapping .config-url-info{align-items:center}
+        .config-account-mapping .slds-select,.config-url-info .slds-input{width:50%}
+        .config-cmn-text{padding-left:2rem}
+        .config-table-details .radio-btn-group{padding-top:0.2rem}
+        .config-table-details .radio-btn-group .input-col{padding-bottom:0.2rem}
+        .config-table-details .radio-btn-group .input-col + .input-col{padding-bottom:0}
+        .config-table-details .slds-table tr .radio-btn-group label{font-weight:400;padding-left:23px}
+        .config-table-details .radio-btn-group input[type="radio"]{margin: 0; vertical-align:middle}
+        .config-table-details .radio-btn-group .uiInput--radio{position:relative}
+        .config-table-details .radio-btn-group .uiInput--radio input[type=radio] {position: absolute;left:0;top:3px}
+        .classForPermissionSetStep, .classForPermissionSetStep div, .classForPermissionSetStep + td{
+        float:left
+        }
+        .classForPermissionSetStep{
+        min-width:250px;}
+        .classForPermissionSetStep div{
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translate(0%, 50%);
+        }
+        .classForPermissionSetStepCheckBox {position:relative;}
+        .classForPermissionSetStepCheckBox > div{
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translate(0, -30%);}
+    </aura:html>
+    
+    <div class="slds-grid slds-grid--vertical forceListViewManager adapetr-config-main">
+        <!--********* HEADER ********* -->
+        <div class="slds-page-header adapetr-header">
+            <div class="slds-media">
+                <div class="slds-media__body">
+                    <aura:if isTrue="{!v.showAccount}">
+                        <h1 class="slds-page-header__title slds-m-right--small slds-align-middle slds-truncate">Auto Loan 1 of 4</h1>
+                        <p class="slds-text-title--caps slds-line-height--reset">Personal Data</p>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{!v.showContact}">
+                        <h1 class="slds-page-header__title slds-m-right--small slds-align-middle slds-truncate">Auto Loan 2 of 4</h1>
+                        <p class="slds-text-title--caps slds-line-height--reset">Contact Creation</p>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showOpportunity}">
+                        <h1 class="slds-page-header__title slds-m-right--small slds-align-middle slds-truncate">Auto Loan 3 of 4</h1>
+                        <p class="slds-text-title--caps slds-line-height--reset">Opportunity Creation</p>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showData}">
+                        <h1 class="slds-page-header__title slds-m-right--small slds-align-middle slds-truncate">Auto Loan 4 of 4</h1>
+                        <p class="slds-text-title--caps slds-line-height--reset">Record Insertion</p>
+                    </aura:if>
+                    <div id="showErrorrTractConfig" class="cmn_error_msg " style="display:none; text-align:center;font-weight:700">
+                        <ui:outputText value="{!v.message}"/>
+                    </div>
+                    <div id="showMessageTractConfig" class="cmn_message " style="display:none;text-align:center;font-weight:700">
+                        <ui:outputText value="{!v.message}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="adapetr-config-sec">
+            <h3 class="slds-text-heading--small">Please provide the following information. All the fields marked with <span class="cmn_mandatory_indicator">*</span> are required.</h3>
+            <div class="slds-box slds-align--absolute-center config-table-details">
+                <aura:if isTrue="{!v.showError}">
+                    <ui:message title="Warning" severity="warning" closable="true">
+                        Please Fill required field first </ui:message>
+                </aura:if>
+
+                <aura:if isTrue="{!v.showError}">
+                    <div class="slds-grid slds-form slds-gutters slds-has-flexi-truncate">
+                        <div class="slds-col slds-size_1-of-3 slds-form-element">
+                            <div class="topSpacing">
+                                <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                            </div>
+                            <div class="width">
+                                <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3 slds-form-element">
+                            <div class="topSpacing">
+                                <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                            </div>
+                            <div class="width">
+                                <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3 slds-form-element">
+                            <div class="topSpacing">
+                                <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                            </div>
+                            <div class="width">
+                                <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                            </div>
+                        </div>
+                    </div>
+                </aura:if>
+
+                
+
+                
+            </div>   
+            
+            <div class="slds-grid  slds-grid--align-center">
+                <aura:if isTrue="{!v.showAccount}">
+                    <button class="slds-button slds-button--brand" onclick="{!c.nextTab}">Next</button>
+                </aura:if>
+                
+                <aura:if isTrue="{!v.showContact}">
+                    <button class="slds-button slds-button--brand" onclick="{!c.prevTab}" >Back</button>
+                    <button class="slds-button slds-button--brand" onclick="{!c.nextTab}" >Next</button>
+                </aura:if>
+                
+                <aura:if isTrue="{!v.showOpportunity}">        
+                    <button class="slds-button slds-button--brand" onclick="{!c.prevTab}" >Back</button> 
+                    <button class="slds-button slds-button--brand" onclick="{!c.nextTab}" >Next</button>
+                </aura:if>
+                <aura:if isTrue="{!v.showData}">        
+                    <button class="slds-button slds-button--brand" onclick="{!c.prevTab}" >Back</button> 
+                    <button class="slds-button slds-button--brand" onclick="{!c.saveRecord}" >Save</button>
+                </aura:if>
+            </div>
+        </div>
+    </div>
+</aura:component>

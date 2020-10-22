@@ -1,0 +1,47 @@
+<!--apex:page controller="applicationFormPDFController" renderAs="PDF" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false"-->
+<apex:page controller="applicationFormPDFController" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false">
+    <html>
+        <head>
+            <apex:stylesheet value="{!URLFOR($Resource.ApplicationPages, 'style.css')}"/>
+            <style type="text/css">
+                table {
+                width: 100%;
+                }
+                @page {
+                width: auto;
+                height: auto;
+                }
+                .centered-text {
+                text-align: center;
+                }
+                .centered-td {
+                width: 100%;
+                }
+                .fw-b {
+                font-weight: bold;
+                }
+                body{
+                font-family: Arial Unicode MS;
+                }
+            </style>
+        </head>
+        <body>
+            <table border="1" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+
+                <tr class="centered-text" style="display:{!IF(isamount == true, '', 'none')}">
+                    <td colspan="2" >{!autoName}</td>
+                </tr>
+                <tr class="centered-text">
+                    <td colspan="2">
+                        <apex:outputPanel rendered="{!isamount}">
+                                {!amount}
+                        </apex:outputPanel>
+
+                    </td>
+                </tr>
+            </table>  
+            <!--apex:image url="{!$Resource.ApplicationPage1}" width="500" height="500"/-->
+
+        </body>
+    </html>
+</apex:page>
