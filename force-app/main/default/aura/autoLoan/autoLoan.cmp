@@ -101,40 +101,59 @@
                         Please Fill required field first </ui:message>
                 </aura:if>
 
-                <aura:if isTrue="{!v.showError}">
-                    <div class="slds-grid slds-form slds-gutters slds-has-flexi-truncate">
-                        <div class="slds-col slds-size_1-of-3 slds-form-element">
-                            <div class="topSpacing">
-                                <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                <aura:if isTrue="{!v.showAccount}">
+                    <div class="infoContainer slds-align--absolute-center">
+                        <div class="slds-grid slds-form slds-gutters slds-has-flexi-truncate slds-wrap">
+                            <div class="slds-col slds-size_1-of-3 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                                </div>
+                                <div class="width">
+                                    <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                                </div>
                             </div>
-                            <div class="width">
-                                <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                            <div class="slds-col slds-size_1-of-3 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                                </div>
+                                <div class="width">
+                                    <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                                </div>
                             </div>
-                        </div>
-                        <div class="slds-col slds-size_1-of-3 slds-form-element">
-                            <div class="topSpacing">
-                                <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                            <div class="slds-col slds-size_1-of-3 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
+                                </div>
+                                <div class="width">
+                                    <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                                </div>
                             </div>
-                            <div class="width">
-                                <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                            <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">Mobile phone<span class="cmn_mandatory_indicator">*</span></label>
+                                </div>
+                                <div class="width">
+                                    <lightning:input type="text" aura:id="mobilePhone" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                                </div>
                             </div>
-                        </div>
-                        <div class="slds-col slds-size_1-of-3 slds-form-element">
-                            <div class="topSpacing">
-                                <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
-                            </div>
-                            <div class="width">
-                                <lightning:input type="text" aura:id="firstName" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                            <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">Email<span class="cmn_mandatory_indicator">*</span></label>
+                                </div>
+                                <div class="width">
+                                    <lightning:input type="text" aura:id="email" value="{!v.accountData.Name}" variant="label-hidden" placeholder="John"/>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    
+                    
                 </aura:if>
 
                 
 
                 
-            </div>   
-            
+            </div>
             <div class="slds-grid  slds-grid--align-center">
                 <aura:if isTrue="{!v.showAccount}">
                     <button class="slds-button slds-button--brand" onclick="{!c.nextTab}">Next</button>
