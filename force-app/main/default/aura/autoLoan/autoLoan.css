@@ -1,3 +1,7 @@
 .THIS .infoContainer {
     max-width: 50%;
 }
+
+.THIS div[lightning-radiogroup_radiogroup].slds-form-element__control {
+    display: flex;
+}
