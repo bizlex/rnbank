@@ -2,6 +2,7 @@
     
     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
     <aura:handler name="carTileEvent" event="c:customEventComponent" action="{!c.handleComponentEvent}"/>
+    <aura:handler name="lookupInnEvent" event="c:customEventComponent" action="{!c.handleLookupInnEvent}"/>
     <!-- <ltng:require scripts="{!join(',', $Resource.jQuery + '/jquery-3.5.1.min.js', $Resource.jqueryMaskedinput + '/jquery.maskedinput.js')}" 
         afterScriptsLoaded="{!c.doInit}" /> -->
     <ltng:require scripts="/resource/jQuery, /resource/jqueryMaskedinput" 
@@ -33,12 +34,12 @@
         {'label': 'Other', 'value': 'Other'},
     ]"/>
     <aura:attribute name="statusMarriageValue" type="String" default="Yes"/>
-    <aura:attribute name="firstStep" type="boolean" default="true"/> <!--change -->
+    <aura:attribute name="firstStep" type="boolean" default="false"/> <!--change -->
     <aura:attribute name="secondStep" type="boolean" default="false"/> 
     <aura:attribute name="thirdStep" type="boolean" default="false"/>
     <aura:attribute name="setMessage" type="String"/>
     <aura:attribute name="showError" type="boolean" default="false"/>
-    <aura:attribute name="fourthStep" type="boolean" default="false"/>
+    <aura:attribute name="fourthStep" type="boolean" default="true"/>
     <aura:attribute name="fifthStep" type="boolean" default="false"/> <!--change -->
     <aura:attribute name="listCars" type="boolean" default="false"/>
     <aura:attribute name="listBrands" type="boolean" default="true"/> 
@@ -51,6 +52,7 @@
     <aura:attribute name="isButtonDisabled" type="boolean" default="false" />
     <aura:attribute name="selectedProduct" type="String" />
     <aura:attribute name="employerName" type="String" />
+    <aura:attribute name="dataFromLookupInn" type="Object" />
     
     <!-- <aura:attribute name="productOptions" type="List" default="[
         {'label': 'OSS BOX QX50', 'value': 'OSS BOX QX50'},
@@ -683,6 +685,7 @@
                                     <lightning:input type="text" aura:id="iin" variant="label-hidden"
                                         value="{!v.caseData.INN__c}" required="true" onchange="{!c.changeINN}"/>
                                 </div>
+                                <c:lookupInn aura:id="iinEmployer" required="true" label="INN with address" />
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
                                 <p>Employer's Address:</p>

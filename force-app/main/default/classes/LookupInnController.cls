@@ -1,25 +1,46 @@
 public with sharing class LookupInnController {
     
     public class ReturnInnWrapper {
+        @AuraEnabled public String value;
+        @AuraEnabled public String label;
+        @AuraEnabled public String address;
         @AuraEnabled public String name;
         @AuraEnabled public String opf;
     }
 
     @AuraEnabled
-    public static LookupComponentController.ReturnInnWrapper searchDadataInn(String item) {
+    public static LookupInnController.ReturnInnWrapper[] searchDadataInn(String item) {
+        System.debug('item = ' + item);
         HttpRequest req = getDaDataRequestInn(item);
+        System.debug('req = ' + req);
         Http h = new Http();
         HttpResponse hresp = h.send(req);
-        String address = hresp.getBody();
-        address = address.replace('type', 'type_z');
-        address = address.replace('short', 'short_z');
-        DaDataInnWrapper parsedAddress = DaDataInnWrapper.parse(address);
-        LookupComponentController.ReturnInnWrapper qwe = new LookupComponentController.ReturnInnWrapper();
-        if (parsedAddress.suggestions.size() > 0) {
-            qwe.name = parsedAddress.suggestions[0].data.name.short_z;
-            qwe.opf = parsedAddress.suggestions[0].data.opf.short_z;
+        System.debug('hresp = ' + hresp);
+
+        String inn = hresp.getBody();
+        System.debug('inn = ' + JSON.serialize(inn));
+
+        inn = inn.replace('type', 'type_z');
+        inn = inn.replace('short', 'short_z');
+        System.debug('inn2 = ' + JSON.serialize(inn));
+        DaDataInnWrapper parsedInn = DaDataInnWrapper.parse(inn);
+        System.debug('parsedInn = ' + JSON.serialize(parsedInn));
+
+        LookupInnController.ReturnInnWrapper[] listOfValue = new LookupInnController.ReturnInnWrapper[]{};
+        for (DaDataInnWrapper.cls_suggestions currectInn : parsedInn.suggestions) {
+            LookupInnController.ReturnInnWrapper qwe = new LookupInnController.ReturnInnWrapper();
+            if (parsedInn.suggestions.size() > 0) {
+                qwe.value = currectInn.value;
+                qwe.label = currectInn.value;
+                qwe.address = currectInn.data.address.value;
+                // qwe.name = currectInn.data.name.short_z;
+                // qwe.opf = currectInn.data.opf.short_z;
+            }
+            listOfValue.add(qwe);
         }
-        return qwe;
+        
+        System.debug('listOfValue = ' + listOfValue);
+        return listOfValue;
     }
 
     public static HttpRequest getDaDataRequestInn(String item) {

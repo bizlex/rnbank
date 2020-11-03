@@ -1,6 +1,6 @@
 public class DaDataInnWrapper{
     public cls_suggestions[] suggestions;
-    class cls_suggestions {
+    public class cls_suggestions {
         public String value;	//ООО "СТЕКЛОКОН"
         public String unrestricted_value;	//ООО "СТЕКЛОКОН"
         public cls_data data;

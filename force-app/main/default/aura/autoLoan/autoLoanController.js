@@ -532,6 +532,21 @@
         console.log("caseData:::", JSON.stringify(caseData));
     },
 
+    handleLookupInnEvent: function(component, event, helper) {
+        console.log("event:::");
+        var childEvent = event.getParam("dataInn");
+        console.log("childEvent", JSON.stringify(childEvent));
+        console.log("childEvent", childEvent.value);
+        console.log("childEvent", childEvent.address);
+
+        component.set("v.dataFromLookupInn", childEvent);
+        var gettedData = component.get("v.dataFromLookupInn");
+        console.log("v.dataFromLookupInn", gettedData);
+
+
+       
+    },
+
     closeCard: function(component, event, helper) {
         component.set("v.isOpenedItem", false);
         component.set("v.listBrands", true);

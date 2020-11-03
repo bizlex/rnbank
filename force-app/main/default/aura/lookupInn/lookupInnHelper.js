@@ -8,25 +8,24 @@
         component.set('v.recordsList', []);
         
 		// Calling Apex Method
-        var action = component.get('c.searchDadata');
+        var action = component.get('c.searchDadataInn');
         action.setParams({
-            'item' : value2,
-            'boundFrom' : boundFrom,
-            'boundTo' : boundTo
+            'item' : value2
         });
         action.setCallback(this,function(response){
             var result = response.getReturnValue();
             
         	if(response.getState() === 'SUCCESS') {
+                console.log('result', result);
+                // component.set("v.employerName", result.value);
     			if(result.length > 0) {
     				// To check if value attribute is prepopulated or not
 					if( $A.util.isEmpty(value) ) {
-                        component.set('v.recordsList',result);
-                        console.log('v.recordsList', result);        
+                        console.log('v.recordsList', result);
+                        component.set('v.recordsList',result);        
 					} else {
-                        component.set('v.selectedRecord', result[0]);
                         console.log('v.selectedRecord', result[0]);
-
+                        component.set('v.selectedRecord', result[0]);
 					}
     			} else {
     				component.set('v.message', "No Records Found for '" + value + "'");
