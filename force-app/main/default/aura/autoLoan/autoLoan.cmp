@@ -1,45 +1,62 @@
 <aura:component access="GLOBAL" implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:appHostable" controller="AutoLoanController">
-    <aura:attribute name="item" type="Case" />
-    <aura:attribute name="firstNameBorrower" type="String" />
-    <aura:attribute name="firstNameContact" type="String" />
-    <aura:attribute name="middleNameBorrower" type="String" />
-    <aura:attribute name="middleNameContact" type="String" />
-    <aura:attribute name="lastNameBorrower" type="String" />
-    <aura:attribute name="lastNameContact" type="String" />
-    <aura:attribute name="mobilePhoneBorrower" type="String" />
-    <aura:attribute name="mobilePhoneContact" type="String" />
-    <aura:attribute name="emailBorrower" type="String" />
-    <aura:attribute name="seriesPassport" type="String" />
-    <aura:attribute name="numberPassport" type="String" />
-    <aura:attribute name="dateOfIssue" type="String" />
-    <aura:attribute name="dateOfBirth" type="String" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:handler name="carTileEvent" event="c:customEventComponent" action="{!c.handleComponentEvent}"/>
+    <!-- <ltng:require scripts="{!join(',', $Resource.jQuery + '/jquery-3.5.1.min.js', $Resource.jqueryMaskedinput + '/jquery.maskedinput.js')}" 
+        afterScriptsLoaded="{!c.doInit}" /> -->
+    <ltng:require scripts="/resource/jQuery, /resource/jqueryMaskedinput" 
+        afterScriptsLoaded="{!c.jsLoaded}" />
+    <aura:attribute name="caseData" type="Case" default="{'sobjectType': 'Case','Stage__c': 'Credit Application'}"/>
     <aura:attribute name="generalWorkExperience" type="String" />
     <aura:attribute name="statusMarriageOption" type="List" default="[
-    {'label': 'Yes', 'value': 'Yes'},
-    {'label': 'No', 'value': 'No'}
+        {'label': 'Yes', 'value': 'Yes'},
+        {'label': 'No', 'value': 'No'}
     ]"/>
     <aura:attribute name="statusSocialOption" type="List" default="[
-    {'label': 'Business owner', 'value': 'business'},
-    {'label': 'Employee', 'value': 'employee'},
-    {'label': 'Soldier', 'value': 'soldier'},
-    {'label': 'Retiree', 'value': 'retiree'},
+        {'label': 'Entrepreneur', 'value': 'Entrepreneur'},
+        {'label': 'Employee', 'value': 'Employee'},
+        {'label': 'Military', 'value': 'Military'},
+        {'label': 'Pensioner', 'value': 'Pensioner'},
     ]"/>
-    <aura:attribute name="formBusinessOption" type="List" default="[
-    {'label': 'Public enterprise', 'value': 'publicEnterprise'},
-    {'label': 'LLC', 'value': 'llc'},
-    {'label': 'Individual Entrepreneur', 'value': 'individualEntrepreneur'},
-    {'label': 'Other', 'value': 'other'},
+    <aura:attribute name="legalEntityTypeOption" type="List" default="[
+        {'label': 'Government enterprise', 'value': 'Government enterprise'},
+        {'label': 'LLC/JSC', 'value': 'LLC/JSC'},
+        {'label': 'Entrepreneur', 'value': 'Entrepreneur'},
+        {'label': 'Other', 'value': 'other'},
+    ]"/>
+    <aura:attribute name="relationToApplicantOption" type="List" default="[
+        {'label': 'Spouse', 'value': 'Spouse'},
+        {'label': 'Parent', 'value': 'Parent'},
+        {'label': 'Sibling', 'value': 'Sibling'},
+        {'label': 'Relative by marriage', 'value': 'Relative by marriage'},
+        {'label': 'Friend/Acquaintance/Colleague', 'value': 'Friend/Acquaintance/Colleague'},
+        {'label': 'Other', 'value': 'Other'},
     ]"/>
     <aura:attribute name="statusMarriageValue" type="String" default="Yes"/>
-    <aura:attribute name="firstStep" type="boolean" default="true"/>
+    <aura:attribute name="firstStep" type="boolean" default="true"/> <!--change -->
     <aura:attribute name="secondStep" type="boolean" default="false"/> 
     <aura:attribute name="thirdStep" type="boolean" default="false"/>
     <aura:attribute name="setMessage" type="String"/>
     <aura:attribute name="showError" type="boolean" default="false"/>
     <aura:attribute name="fourthStep" type="boolean" default="false"/>
-    <aura:attribute name="fifthStep" type="boolean" default="false"/>
+    <aura:attribute name="fifthStep" type="boolean" default="false"/> <!--change -->
+    <aura:attribute name="listCars" type="boolean" default="false"/>
+    <aura:attribute name="listBrands" type="boolean" default="true"/> 
+    <aura:attribute name="isOpenedItem" type="boolean" default="false"/> <!--change -->
+    <aura:attribute name="brandCars" type="String" default=""/>
+    <aura:attribute name="itemCar" type="String" default=""/>
+    <aura:attribute name="carById" type="String" default=""/>
     <aura:attribute name="message" type="String" default="NoError"/>
-    <aura:attribute name="creditTerm" default="12" type="Integer" />
+    <aura:attribute name="spinner" type="boolean" default="false" />
+    <aura:attribute name="isButtonDisabled" type="boolean" default="false" />
+    <aura:attribute name="selectedProduct" type="String" />
+    <aura:attribute name="employerName" type="String" />
+    
+    <!-- <aura:attribute name="productOptions" type="List" default="[
+        {'label': 'OSS BOX QX50', 'value': 'OSS BOX QX50'},
+        {'label': 'Promo BOX QX50 CPI Light', 'value': 'Promo BOX QX50 CPI Light'},
+        {'label': 'Promo BOX QX50', 'value': 'Promo BOX QX50'},
+    ]"/> -->
     
     <aura:html tag="style">
         .cmn_error_msg{font-size:13px; color: rgb(194, 57, 52);}
@@ -91,6 +108,16 @@
         left: 0;
         transform: translate(0, -30%);}
     </aura:html>
+
+    <aura:if isTrue="{!v.spinner}">
+      <div aura:id="spinnerId" class="slds-spinner_container">
+          <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+              <span class="slds-assistive-text">Loading...</span>
+              <div class="slds-spinner__dot-a"></div>
+              <div class="slds-spinner__dot-b"></div>
+          </div>
+      </div>
+    </aura:if>
     
     <div class="slds-grid slds-grid--vertical forceListViewManager adapetr-config-main">
         <!--********* HEADER ********* -->
@@ -139,12 +166,16 @@
         </div>
         
         <div class="adapetr-config-sec">
-            <h3 class="slds-text-heading--small">Please provide the following information. All the fields marked with <span class="cmn_mandatory_indicator">*</span> are required.</h3>
-            <div class="slds-box slds-align--absolute-center">
+            <h3 class="slds-text-heading--small">Please provide the following information. All the fields marked with 
+                <span class="cmn_mandatory_indicator">*</span> are required.
+            </h3>
+            <div class="boxContainer slds-box slds-align--absolute-center">
                 <!-- <aura:if isTrue="{!v.showError}">
                     <ui:message title="Warning" severity="warning" closable="true">
                         Please Fill required field first </ui:message>
                 </aura:if> -->
+
+                <!--********* First Step ********* -->
 
                 <aura:if isTrue="{!v.firstStep}">
                     <div class="infoContainer slds-align--absolute-center">
@@ -154,7 +185,8 @@
                                     <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="firstName" value="{!v.firstNameBorrower}" variant="label-hidden" placeholder="John"/>
+                                    <lightning:input type="text" aura:id="firstName" value="{!v.caseData.First_Name__c}" 
+                                        variant="label-hidden" placeholder="John" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
@@ -163,8 +195,8 @@
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="middleName" value="{!v.middleNameBorrower}" variant="label-hidden"
-                                        placeholder="Jackson" />
+                                    <lightning:input type="text" aura:id="middleName" value="{!v.caseData.Middle_Name__c}" variant="label-hidden"
+                                        placeholder="Jackson" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
@@ -173,18 +205,23 @@
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="lastName" value="{!v.lastNameBorrower}" variant="label-hidden"
-                                        placeholder="Smith" />
+                                    <lightning:input type="text" aura:id="lastName" value="{!v.caseData.Last_Name__c}" variant="label-hidden"
+                                        placeholder="Smith" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
                                 <div class="topSpacing">
                                     <label class="slds-form-element__label">Mobile phone<span class="cmn_mandatory_indicator">*</span></label>
+                                    <lightning:helptext content="The phone number must be in the following format: +7 (920) 123-45-67"></lightning:helptext>
                                 </div>
-                                <div class="width">
-                                    <lightning:input type="tel" aura:id="mobilePhone" value="{!v.mobilePhoneBorrower}" variant="label-hidden"
-                                        placeholder="+7 (920) 123-45-67"
-                                        pattern="[+][0-9]{1} [(][0-9]{3}[)] [0-9]{3}-[0-9]{2}-[0-9]{2}" />
+                                <!-- <div class="width">
+                                    <lightning:input class="tel-mask" type="tel"  value="{!v.caseData.Mobile_phone__c}" variant="label-hidden"
+                                        placeholder="+7(920)123-45-67" required="true"/>
+                                </div> -->
+                                <div class="slds-form-element__control">
+                                    <input type="tel" placeholder="+7(920)123-45-67" required="true"
+                                     value="{!v.caseData.Mobile_phone__c}" class="slds-input tel-mobile" />
+                                    <!-- <div class="slds-form-element__help" id="mobile">Enter a value.</div> -->
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
@@ -192,8 +229,8 @@
                                     <label class="slds-form-element__label">Email<span class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="email" aura:id="email" value="{!v.emailBorrower}" variant="label-hidden"
-                                        placeholder="username@example.com" />
+                                    <lightning:input type="email" aura:id="email" value="{!v.caseData.ApplicantEmail__c}" variant="label-hidden"
+                                        placeholder="username@example.com" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
@@ -202,17 +239,85 @@
                                 </div>
                                 <div class="width">
                                     <lightning:slider class="slds-size_large" aura:id="slider" title="Credit Term"
-                                        step="12" max="60" min="12" value="{!v.creditTerm}" onchange="{! c.changeCreditTerm }" 
+                                        step="12" max="60" min="12" value="{!v.caseData.Term__c}" onchange="{! c.changeCreditTerm }" 
                                         variant="label-hidden" />
                                 </div>
                             </div>
-                            
-                            
-                        
                         </div>
 
                     </div>
+                    <aura:if isTrue="{!v.listBrands}">
+                        <div class="carContainer slds-align--absolute-center slds-m-top_xx-large">
+                            <div class="slds-grid slds-form slds-gutters slds-has-flexi-truncate slds-wrap">
+                                <div class="slds-col slds-size_1-of-5 slds-form-element">
+                                    <div class="page-single-news__clients_item page-single-news__clients_item--renault" >
+                                        <a title="renault" class="item-inner" href="" onclick="{!c.selectBrand}" >
+                                            <div class="item-link">Select a car</div>
+                                            <div class="item-icon">&nbsp;</div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-5 slds-form-element">
+                                    <div class="page-single-news__clients_item page-single-news__clients_item--infinity">
+                                        <a title="infinity" class="item-inner" href="" onclick="{!c.selectBrand}">
+                                            <div class="item-link">Select a car</div>
+                                            <div class="item-icon">&nbsp;</div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-5 slds-form-element">
+                                    <div class="page-single-news__clients_item page-single-news__clients_item--nissan">
+                                        <a title="nissan" class="item-inner" href="" onclick="{!c.selectBrand}">
+                                            <div class="item-link">Select a car</div>
+                                            <div class="item-icon">&nbsp;</div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-5 slds-form-element">
+                                    <div class="page-single-news__clients_item page-single-news__clients_item--datsun">
+                                        <a title="datsun" class="item-inner" href="" onclick="{!c.selectBrand}">
+                                            <div class="item-link">Select a car</div>
+                                            <div class="item-icon">&nbsp;</div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="slds-col slds-size_1-of-5 slds-form-element">
+                                    <div class="page-single-news__clients_item page-single-news__clients_item--lada">
+                                        <a title="lada" class="item-inner" href="" onclick="{!c.selectBrand}">
+                                            <div class="item-link">Select a car</div>
+                                            <div class="item-icon">&nbsp;</div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aura:if>
+                    
+
+                    <aura:if isTrue="{!v.listCars}">
+                        <div class="carItemContainer slds-align--absolute-center slds-m-top_xx-large">
+                            <div class="slds-grid slds-align--absolute-center slds-form slds-gutters slds-has-flexi-truncate slds-wrap">
+                                <c:carTile selectedBrand="{!v.brandCars}" selectedCar="{!v.itemCar}" />
+                            </div>
+                        </div>
+                    </aura:if>
+
+                    <aura:if isTrue="{!v.isOpenedItem}">
+                        <lightning:card class="selectedItemCard slds-m-top_xx-large" variant="Narrow" title="Selected Car">
+                            <aura:set attribute="actions">
+                                <lightning:buttonIcon iconName="utility:close" variant="border-filled" 
+                                    alternativeText="Cancel Selection" onclick="{!c.closeCard}"/>
+                            </aura:set>
+                            <c:carTile selectedBrand="{!v.brandCars}" selectedCar="{!v.itemCar}"/>
+                    </lightning:card>
+                    </aura:if>
+                    
+                
+                    
                 </aura:if>
+
+                <!--********* Second Step ********* -->
+
                 <aura:if isTrue="{!v.secondStep}">
                     <div class="infoContainer slds-align--absolute-center">
                         <div class="slds-grid slds-form slds-gutters slds-has-flexi-truncate slds-wrap">
@@ -222,20 +327,23 @@
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
                                 <div class="topSpacing">
                                     <label class="slds-form-element__label">Series<span class="cmn_mandatory_indicator">*</span></label>
+                                    <lightning:helptext content="Enter 4 digits of the Passport Series"></lightning:helptext>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="seriesPassport" value="{!v.seriesPassport}" 
-                                    variant="label-hidden" placeholder="4095" pattern="[0-9]{4}"/>
+                                    <lightning:input type="text" aura:id="seriesPassport" value="{!v.caseData.Series__c}" 
+                                    variant="label-hidden" placeholder="4095" pattern="[0-9]{4}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
                                 <div class="topSpacing">
                                     <label class="slds-form-element__label">Number<span
                                             class="cmn_mandatory_indicator">*</span></label>
+                                    <lightning:helptext content="Enter 6 digits of the Passport Number"></lightning:helptext>
+
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="numberPassport" value="{!v.numberPassport}" variant="label-hidden"
-                                        placeholder="123456" pattern="[0-9]{6}"/>
+                                    <lightning:input type="text" aura:id="numberPassport" value="{!v.caseData.PassportNumber__c}" variant="label-hidden"
+                                        placeholder="123456" pattern="[0-9]{6}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
@@ -244,8 +352,8 @@
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="date" aura:id="dateOfIssue" value="{!v.dateOfIssue}" variant="label-hidden"
-                                        placeholder="" />
+                                    <lightning:input type="date" aura:id="dateOfIssue" value="{!v.caseData.Issue_date__c}" variant="label-hidden"
+                                        placeholder="" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
@@ -254,23 +362,22 @@
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:radioGroup   aura:id="statusMarriage" name="statusMarriage"
-                                                    variant="label-hidden"
-                                                    class=""
+                                    <lightning:combobox   aura:id="statusMarriage" name="statusMarriage"
+                                                    variant="label-hidden" required="true"
                                                     options="{! v.statusMarriageOption }"
-                                                    value="{! v.statusMarriageValue }"
-                                                    type="radio"
-                                                    onchange="{! c.changeStatusMarriage }"/>
+                                                    onchange="{! c.changeStatusMarriage }"
+                                                    value="{!v.caseData.Married__c}"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
                                     <label class="slds-form-element__label">Number of dependent persons<span
                                             class="cmn_mandatory_indicator">*</span></label>
+                                    <lightning:helptext content="Enter up to 2 digits"></lightning:helptext>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="dependentPersons" variant="label-hidden"
-                                        />
+                                        value="{!v.caseData.Dependants_number__c}" placeholder="2" pattern="[0-9]" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
@@ -280,100 +387,210 @@
                                 </div>
                                 <div class="width">
                                     <lightning:combobox   aura:id="statusSocial" name="statusSocial"
-                                                    variant="label-hidden"
+                                                    variant="label-hidden" required="true"
                                                     options="{! v.statusSocialOption }"
-                                                    onchange="{! c.changeStatusSocial }"/>
+                                                    onchange="{! c.changeStatusSocial }"
+                                                    value="{!v.caseData.Social_status__c}"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
                                 <p>Address:</p>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">Region, republic:<span
                                             class="cmn_mandatory_indicator">*</span></label>
-                                </div>
+                                </div> -->
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="region" variant="label-hidden"
-                                        />
+                                    <c:lookupComponent aura:id="region" label="Region, republic:" boundFrom="region" boundTo="region" required="true"
+                                     />
+                                    <!-- <lightning:input type="text" aura:id="region" variant="label-hidden"
+                                        value="{!v.caseData.Region__c}" onchange="{!c.changeAddress}" required="true" /> -->
+
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <c:lookupComponent label="District:" aura:id="district" boundFrom="area" boundTo="area" required="true"/>
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">District:<span
                                             class="cmn_mandatory_indicator">*</span></label>
-                                </div>
-                                <div class="width">
+                                </div> -->
+                                <!-- <div class="width">
                                     <lightning:input type="text" aura:id="district" variant="label-hidden"
-                                        />
-                                </div>
+                                        value="{!v.caseData.District__c}" required="true"/>
+                                </div> -->
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <c:lookupComponent label="City, locality:" aura:id="city" boundFrom="city" boundTo="settlement" required="true"/>
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">City, locality:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="city" variant="label-hidden"
-                                        />
-                                </div>
+                                        value="{!v.caseData.City__c}" required="true"/>
+                                </div> -->
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <c:lookupComponent label="Street:" aura:id="street" boundFrom="street" boundTo="street" required="true"/>
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">Street:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="street" variant="label-hidden"
-                                        />
-                                </div>
+                                        value="{!v.caseData.Street__c}" required="true"/>
+                                </div> -->
                             </div>
                             <div class="slds-col slds-size_1-of-4 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Building:<span
-                                            class="cmn_mandatory_indicator">*</span></label>
+                                    <label class="slds-form-element__label">House:<span
+                                        class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="building" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="house" variant="label-hidden"
+                                        value="{!v.caseData.House__c}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-4 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Bock:<span
-                                            class="cmn_mandatory_indicator">*</span></label>
+                                    <label class="slds-form-element__label">Block:</label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="block" variant="label-hidden"
-                                        />
+                                        value="{!v.caseData.Block__c}"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-4 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Apartment:<span
+                                    <label class="slds-form-element__label">Building:</label>
+                                </div>
+                                <div class="width">
+                                    <lightning:input type="text" aura:id="building" variant="label-hidden"
+                                        value="{!v.caseData.Building__c}"/>
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-4 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">Flat:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="apartment" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="flat" variant="label-hidden"
+                                        value="{!v.caseData.Flat__c}" required="true"/>
                                 </div>
                             </div>
-                            
+                            <!-- <lightning:accordion aura:id="accordion" activeSectionName="A" allowMultipleSectionsOpen="true">
+                                <lightning:accordionSection name="A" label="DaData address (InProgress, delete accordion after complete)">
+                                    <aura:set attribute="body">
+
+
+                                        <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                            <p>Address:</p>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                            <div class="width">
+                                                <c:lookupComponent label="Region, republic:" boundFrom="region" boundTo="region" required="true"/>
+
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                            <div class="width">
+                                                <c:lookupComponent label="District:" boundFrom="area" boundTo="area" required="true"/>
+
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                            <div class="width">
+                                                <c:lookupComponent label="City, locality:" boundFrom="city" boundTo="settlement" required="true"/>
+
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                            <div class="width">
+                                                <c:lookupComponent label="Street:" boundFrom="street" boundTo="street" required="true"/>
+
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-4 slds-form-element">
+                                            <div class="topSpacing">
+                                                <label class="slds-form-element__label">House:<span
+                                                        class="cmn_mandatory_indicator">*</span></label>
+                                            </div>
+                                            <div class="width">
+                                                <lightning:input type="text" aura:id="house" variant="label-hidden"
+                                                    value="{!v.caseData.House__c}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-4 slds-form-element">
+                                            <div class="topSpacing">
+                                                <label class="slds-form-element__label">Block:<span
+                                                        class="cmn_mandatory_indicator">*</span></label>
+                                            </div>
+                                            <div class="width">
+                                                <lightning:input type="text" aura:id="block" variant="label-hidden"
+                                                    value="{!v.caseData.Block__c}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-4 slds-form-element">
+                                            <div class="topSpacing">
+                                                <label class="slds-form-element__label">Building:<span
+                                                        class="cmn_mandatory_indicator">*</span></label>
+                                            </div>
+                                            <div class="width">
+                                                <lightning:input type="text" aura:id="building" variant="label-hidden"
+                                                    value="{!v.caseData.Building__c}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col slds-size_1-of-4 slds-form-element">
+                                            <div class="topSpacing">
+                                                <label class="slds-form-element__label">Flat:<span
+                                                        class="cmn_mandatory_indicator">*</span></label>
+                                            </div>
+                                            <div class="width">
+                                                <lightning:input type="text" aura:id="flat" variant="label-hidden"
+                                                    value="{!v.caseData.Flat__c}" required="true"/>
+                                            </div>
+                                        </div>
+            
+                                    </aura:set>
+                                </lightning:accordionSection>
+                            </lightning:accordion> -->
                             
                         
                         </div>
 
                     </div>
                 </aura:if>
+
+                <!--********* Third Step ********* -->
+
                 <aura:if isTrue="{!v.thirdStep}">
                     <div class="infoContainer slds-align--absolute-center">
                         <div class="slds-grid slds-form slds-gutters slds-has-flexi-truncate slds-wrap">
+                            <div class="slds-col slds-size_1-of-1 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">Relation to the Applicant<span class="cmn_mandatory_indicator">*</span></label>
+                                </div>
+                                <div class="width">
+                                    <lightning:combobox   aura:id="relationToApplicant" name="relationToApplicant"
+                                                    variant="label-hidden" required="true"
+                                                    options="{! v.relationToApplicantOption }"
+                                                    onchange="{! c.changeRelationToApplicant }"
+                                                    value="{!v.caseData.Relation_to_the_Applicant__c}"/>
+                                </div>
+                            </div>
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
                                 <div class="topSpacing">
                                     <label class="slds-form-element__label">First Name<span class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="firstNameContact" value="{!v.firstNameContact}" variant="label-hidden" placeholder="John"/>
+                                    <lightning:input type="text" aura:id="firstNameContact" value="{!v.caseData.First_NameContactPerson__c}" 
+                                        variant="label-hidden" placeholder="John" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
@@ -382,8 +599,8 @@
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="middleNameContact" value="{!v.middleNameContact}" variant="label-hidden"
-                                        placeholder="Jackson" />
+                                    <lightning:input type="text" aura:id="middleNameContact" value="{!v.caseData.Middle_NameContactPerson__c}" variant="label-hidden"
+                                        placeholder="Jackson" required="true" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-3 slds-form-element">
@@ -392,8 +609,8 @@
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="lastNameContact" value="{!v.lastNameContact}" variant="label-hidden"
-                                        placeholder="Smith" />
+                                    <lightning:input type="text" aura:id="lastNameContact" value="{!v.caseData.Last_NameContactPerson__c}" variant="label-hidden"
+                                        placeholder="Smith" required="true" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
@@ -401,23 +618,33 @@
                                     <label class="slds-form-element__label">Date of Birth<span class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="date" aura:id="dateOfBirth" value="{!v.dateOfBirth}" variant="label-hidden"
-                                        placeholder="" />
+                                    <lightning:input type="date" aura:id="dateOfBirth" value="{!v.caseData.Date_of_Birth__c}" variant="label-hidden"
+                                        placeholder="" required="true" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
                                     <label class="slds-form-element__label">Mobile phone<span class="cmn_mandatory_indicator">*</span></label>
+                                    <lightning:helptext content="The phone number must be in the following format: +7 (920) 123-45-67"></lightning:helptext>
                                 </div>
-                                <div class="width">
-                                    <lightning:input type="tel" aura:id="mobilePhoneContact" value="{!v.mobilePhoneBorrower}" variant="label-hidden"
-                                        placeholder="+7 (920) 123-45-67"
-                                        pattern="[+][0-9]{1} [(][0-9]{3}[)] [0-9]{3}-[0-9]{2}-[0-9]{2}" />
+                                
+                                <div class="slds-form-element__control">
+                                    <lightning:input type="tel" aura:id="mobilePhoneContact" value="{!v.caseData.Mobile_phoneContactPerson__c}" variant="label-hidden"
+                                    placeholder="+7 (920) 123-45-67" required="true"
+                                    pattern="[+][0-9]{1} [(][0-9]{3}[)] [0-9]{3}-[0-9]{2}-[0-9]{2}" />
+                                    <!-- <input type="tel" placeholder="+7(920)123-45-67" required="true"
+                                        value="{!v.caseData.Mobile_phoneContactPerson__c}" class="slds-input tel-mobile-contact" /> -->
+                                    <!-- <div class="slds-form-element__help" id="mobile">Enter a value.</div> -->
                                 </div>
+                                
+                                
                             </div>
                         </div>
                     </div>
                 </aura:if>
+
+                <!--********* Fourth Step ********* -->
+
                 <aura:if isTrue="{!v.fourthStep}">
                     <div class="infoContainer slds-align--absolute-center">
                         <div class="slds-grid slds-form slds-gutters slds-has-flexi-truncate slds-wrap">
@@ -426,14 +653,15 @@
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Form of Business Organization:<span
+                                    <label class="slds-form-element__label">Legal Entity Type:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:combobox   aura:id="formBusiness" name="formBusiness"
-                                                    variant="label-hidden"
-                                                    options="{! v.formBusinessOption }"
-                                                    onchange="{! c.changeformBusiness }"/>
+                                    <lightning:combobox   aura:id="legalEntityType" name="legalEntityType"
+                                                    variant="label-hidden" required="true"
+                                                    options="{!v.legalEntityTypeOption}"
+                                                    value="{!v.caseData.Legal_Entity_Type__c}"
+                                                    onchange="{!c.changeLegalEntityType}"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
@@ -443,80 +671,93 @@
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="employerName" variant="label-hidden"
-                                        />
+                                        value="{!v.employerName}" required="true" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">TIN:<span
+                                    <label class="slds-form-element__label">INN:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="tin" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="iin" variant="label-hidden"
+                                        value="{!v.caseData.INN__c}" required="true" onchange="{!c.changeINN}"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
                                 <p>Employer's Address:</p>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <c:lookupComponent aura:id="regionEmployer" label="Region, republic:" boundFrom="region" boundTo="region" required="true"
+                                     />
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">Region, republic:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="region" variant="label-hidden"
-                                        />
-                                </div>
+                                    <lightning:input type="text" aura:id="regionEmployer" variant="label-hidden"
+                                        value="{!v.caseData.RegionEmployer__c}" required="true"/>
+                                </div> -->
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <c:lookupComponent label="District:" aura:id="districtEmployer" boundFrom="area" boundTo="area" required="true"/>
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">District:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="district" variant="label-hidden"
-                                        />
-                                </div>
+                                    <lightning:input type="text" aura:id="districtEmployer" variant="label-hidden"
+                                        value="{!v.caseData.DistrictEmployer__c}" required="true"/>
+                                </div> -->
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <c:lookupComponent label="City, locality:" aura:id="cityEmployer" boundFrom="city" boundTo="settlement" required="true"/>
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">City, locality:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="city" variant="label-hidden"
-                                        />
-                                </div>
+                                    <lightning:input type="text" aura:id="cityEmployer" variant="label-hidden"
+                                        value="{!v.caseData.CityEmployer__c}" required="true"/>
+                                </div> -->
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <div class="topSpacing">
+                                <c:lookupComponent label="Street:" aura:id="streetEmployer" boundFrom="street" boundTo="street" required="true"/>
+                                <!-- <div class="topSpacing">
                                     <label class="slds-form-element__label">Street:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="street" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="streetEmployer" variant="label-hidden"
+                                        value="{!v.caseData.StreetEmployer__c}" required="true"/>
+                                </div> -->
+                            </div>
+                            <div class="slds-col slds-size_1-of-4 slds-form-element">
+                                <div class="topSpacing">
+                                    <label class="slds-form-element__label">House:<span
+                                            class="cmn_mandatory_indicator">*</span></label>
+                                </div>
+                                <div class="width">
+                                    <lightning:input type="text" aura:id="houseEmployer" variant="label-hidden"
+                                        value="{!v.caseData.HouseEmployer__c}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-4 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Building:<span
-                                            class="cmn_mandatory_indicator">*</span></label>
+                                    <label class="slds-form-element__label">Block:</label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="building" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="blockEmployer" variant="label-hidden"
+                                        value="{!v.caseData.BlockEmployer__c}"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-4 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Bock:<span
-                                            class="cmn_mandatory_indicator">*</span></label>
+                                    <label class="slds-form-element__label">Building:</label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="block" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="buildingEmployer" variant="label-hidden"
+                                        value="{!v.caseData.BuildingEmployer__c}"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-4 slds-form-element">
@@ -525,12 +766,12 @@
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="office" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="officeEmployer" variant="label-hidden"
+                                        value="{!v.caseData.Office__c}" required="true" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <p>Income and Position Information:</p>
+                                <p>Applicant Position and Income Details:</p>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
                                 <div class="topSpacing">
@@ -539,51 +780,53 @@
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="position" variant="label-hidden"
-                                        />
+                                    value="{!v.caseData.Position__c}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Start Date in Company:<span
+                                    <label class="slds-form-element__label">Hire date:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="date" aura:id="position" variant="label-hidden"
-                                        />
+                                    <lightning:input type="date" aura:id="hireDate" variant="label-hidden"
+                                    value="{!v.caseData.Hire_date__c}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Start of the General Work Experience:<span
+                                    <label class="slds-form-element__label">Total Work Experience from:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
-                                    <ui:inputDate aura:id="generalWorkExperience" value="{!v.generalWorkExperience}" 
-                                        displayDatePicker="true" format="dd/yyyy"/>
+                                    <!-- <ui:inputDate aura:id="totalWorkExperience" value="{!v.caseData.Total_work_experience_from__c}" 
+                                        displayDatePicker="true" format="MM/yyyy" required="true"/> -->
+                                    <lightning:input type="date" aura:id="totalWorkExperience" variant="label-hidden"
+                                    value="{!v.caseData.Total_work_experience_from__c}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Income at the Primary Employment (after taxes), rubles:<span
+                                    <label class="slds-form-element__label">Main Income (after taxes):<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="primaryEmploymentIncome" variant="label-hidden"
-                                        />
+                                    value="{!v.caseData.Main_Income__c}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Date of Receipt of Salary:<span
+                                    <label class="slds-form-element__label">Salary Day:<span
                                             class="cmn_mandatory_indicator">*</span></label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="dateSalary" variant="label-hidden"
-                                        placeholder="05" pattern="[0-9]{2}" />
+                                        placeholder="05"  value="{!v.caseData.Salary_day__c}" required="true"/>
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-1 slds-form-element">
-                                <p>Other regular income (per month), rubles:</p>
+                                <p>Other Regular Income (monthly):</p>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
@@ -591,16 +834,16 @@
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="pension" variant="label-hidden"
-                                        />
+                                    value="{!v.caseData.Pension_Amount__c}" placeholder="" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Income from deposits/Mutual Funds/Dividends</label>
+                                    <label class="slds-form-element__label">Deposits/Investments/Dividends Income</label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="deposits" variant="label-hidden"
-                                        />
+                                    value="{!v.caseData.Deposits_Investments_Dividends_Income__c}" placeholder="" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
@@ -609,34 +852,34 @@
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="alimony" variant="label-hidden"
-                                        />
+                                    value="{!v.caseData.AlimonyAmount__c}" placeholder="" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Part-time work</label>
+                                    <label class="slds-form-element__label">Part-time job</label>
                                 </div>
                                 <div class="width">
-                                    <lightning:input type="text" aura:id="parttimeWork" variant="label-hidden"
-                                        />
+                                    <lightning:input type="text" aura:id="parttimeJob" variant="label-hidden"
+                                    value="{!v.caseData.Part_time_job_Income__c}" placeholder="" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Renting out an apartment</label>
+                                    <label class="slds-form-element__label">Property Rent Income</label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="rentingApartment" variant="label-hidden"
-                                        />
+                                    value="{!v.caseData.Property_Rent_Income__c}" placeholder="" />
                                 </div>
                             </div>
                             <div class="slds-col slds-size_1-of-2 slds-form-element">
                                 <div class="topSpacing">
-                                    <label class="slds-form-element__label">Freelance</label>
+                                    <label class="slds-form-element__label">Freelance Job</label>
                                 </div>
                                 <div class="width">
                                     <lightning:input type="text" aura:id="freelance" variant="label-hidden"
-                                        />
+                                    value="{!v.caseData.Freelance_Income__c}" placeholder="" />
                                 </div>
                             </div>
                             
@@ -645,6 +888,75 @@
                         </div>
 
                     </div>
+                </aura:if>
+
+                <!--********* Fith Step ********* -->
+
+                <aura:if isTrue="{!v.fifthStep}">
+                    
+                    <aura:if isTrue="{!v.isOpenedItem}">
+                        <lightning:card class="selectedItemCard slds-m-top_medium" variant="Narrow" title="Selected Car">
+                            <aura:set attribute="actions">
+                                <lightning:buttonIcon iconName="utility:close" aura:id="buttonIconClose" variant="border-filled" 
+                                    alternativeText="Cancel Selection" onclick="{!c.closeCard}" disabled="{!v.isButtonDisabled}"/>
+                            </aura:set>
+                            <c:carTile selectedBrand="{!v.brandCars}" selectedCar="{!v.itemCar}"/>
+                        </lightning:card>
+                    </aura:if>
+
+                    <div class="carItemContainer slds-align--absolute-center slds-m-top_xx-large slds-m-bottom_xx-large">
+                        <div class="slds-grid slds-align--absolute-center slds-form slds-gutters slds-has-flexi-truncate slds-wrap">
+                            <!-- <c:productTile selectedBrand="{!v.brandCars}" selectedCar="{!v.itemCar}" /> -->
+                            <lightning:card class="selectedItemCard colorTitle slds-m-top_medium" variant="Narrow" title="Promo BOX QX50">
+                                <aura:set attribute="actions">
+                                    <span class="titleColor slds-text-heading_small">Select: </span>
+                                    <input class="slds-radio" type="radio" aura:id="selectedProduct" name="product" value="01t5r000000FPSYAA4" 
+                                         onchange="{!c.changeProduct}" />
+                                </aura:set>
+                                <div class="tDetails slds-p-horizontal_xx-large">
+                                    <h6>Credit Term: <div class="productValue"><span>3 years</span></div></h6>
+                                    <h6>Interest Rate: <div class="productValue"><span>10,5%</span></div></h6>
+                                    <h6>Inital Payment: <div class="productValue"><span>622,000</span></div></h6>
+                                    <h6>KASKO: <div class="productValue"><span>50,000</span><span class="rub">Р</span></div></h6>
+                                    <h6>Credit Amount: <div class="productValue"><span>2,538,000</span><span class="rub">Р</span></div></h6>
+                                    <h6>Monthly Payment: <div class="productValue"><span>82,491</span><span class="rub">Р</span></div></h6>
+                                </div>
+                            </lightning:card>
+                            <lightning:card class="selectedItemCard colorTitle slds-m-top_medium" variant="Narrow" title="Promo BOX QX50 CPI Light">
+                                <aura:set attribute="actions">
+                                    <span class="titleColor slds-text-heading_small">Select: </span>
+                                    <input class="slds-radio" type="radio" aura:id="selectedProduct" name="product" value="01t5r000000FPSdAAO" 
+                                         onchange="{!c.changeProduct}" />
+                                </aura:set>
+                                <div class="tDetails slds-p-horizontal_xx-large">
+                                    <h6>Credit Term: <div class="productValue"><span>3 years</span></div></h6>
+                                    <h6>Interest Rate: <div class="productValue"><span>10,5%</span></div></h6>
+                                    <h6>Inital Payment: <div class="productValue"><span>933,000</span></div></h6>
+                                    <h6>KASKO: <div class="productValue"><span>50,000</span><span class="rub">Р</span></div></h6>
+                                    <h6>Credit Amount: <div class="productValue"><span>2,227,000</span><span class="rub">Р</span></div></h6>
+                                    <h6>Monthly Payment: <div class="productValue"><span>72,383</span><span class="rub">Р</span></div></h6>
+                                </div>
+                            </lightning:card>
+                            <lightning:card class="selectedItemCard colorTitle slds-m-top_medium" variant="Narrow" title="OSS BOX QX50">
+                                <aura:set attribute="actions">
+                                    <span class="titleColor slds-text-heading_small">Select: </span>
+                                    <input class="slds-radio" type="radio" aura:id="selectedProduct" name="product" value="01t5r000000FPSiAAO" 
+                                         onchange="{!c.changeProduct}" />
+                                </aura:set>
+                                <div class="tDetails slds-p-horizontal_xx-large">
+                                    <h6>Credit Term: <div class="productValue"><span>3 years</span></div></h6>
+                                    <h6>Interest Rate: <div class="productValue"><span>9,5%</span></div></h6>
+                                    <h6>Inital Payment: <div class="productValue"><span>1,710,500</span></div></h6>
+                                    <h6>KASKO: <div class="productValue"><span>50,000</span><span class="rub">Р</span></div></h6>
+                                    <h6>Credit Amount: <div class="productValue"><span>1,449,500</span><span class="rub">Р</span></div></h6>
+                                    <h6>Monthly Payment: <div class="productValue"><span>42,432</span><span class="rub">Р</span></div></h6>
+                                </div>
+                            </lightning:card>
+                        </div>
+                    </div>
+
+
+                    
                 </aura:if>
 
                 
@@ -667,7 +979,11 @@
                 </aura:if>
                 <aura:if isTrue="{!v.fourthStep}">        
                     <button class="slds-button slds-button--brand" onclick="{!c.prevTab}" >Back</button> 
-                    <button class="slds-button slds-button--brand" onclick="{!c.saveRecord}" >Save</button>
+                    <button class="slds-button slds-button--brand" onclick="{!c.nextTab}" >Next</button>
+                </aura:if>
+                <aura:if isTrue="{!v.fifthStep}">        
+                    <button class="slds-button slds-button--brand" onclick="{!c.prevTab}" >Back</button> 
+                    <button class="slds-button slds-button--brand" onclick="{!c.saveRecord}" >Finish</button>
                 </aura:if>
             </div>
         </div>

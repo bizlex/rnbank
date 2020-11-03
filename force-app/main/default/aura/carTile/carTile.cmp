@@ -1,0 +1,27 @@
+<aura:component controller="CarTileController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global">
+
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute name="cars" type="List"/>
+    <aura:attribute name="selectedBrand" type="String" />
+    <aura:attribute name="selectedCar" type="String" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:registerEvent name="carTileEvent" type="c:customEventComponent"/>
+
+    <aura:iteration items="{!v.cars}" var="car">
+        <div class="vehicleContainer">
+            <a class="tCar" title="{!car.Name}" aura:id="carId" data-car="{!car.Id}" href="" onclick="{!c.selectCar}">
+                <!-- <span class="tCts tDependent">Выбрать</span> -->
+                <img src="{!car.Model_Image_URL__c}" />
+            </a>            
+            <div class="tDetails">
+
+                <h6>{!car.Name}</h6>
+                <h6>Price: {!car.Price__c} &nbsp;<span class="rub">Р</span></h6>
+            </div>
+        </div>
+    </aura:iteration>
+
+    
+
+
+</aura:component>

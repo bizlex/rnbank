@@ -1,0 +1,27 @@
+.THIS span.slds-text-heading_small.slds-truncate {
+    color: #f96500;
+}
+
+.THIS .titleColor {
+    color: #f96500;
+}
+
+.THIS .tDetails > h6 {
+    font-size: 15px;
+    white-space: nowrap;
+    /* text-align: center; */
+}
+
+.THIS .productValue {
+    text-align: right;
+    display: inline-block;
+    float: right;
+
+}
+
+.THIS .rub { 
+	line-height: 5px;
+	width: 0.4em;
+	border-bottom: 1px solid #000; 
+    display: inline-block;
+}

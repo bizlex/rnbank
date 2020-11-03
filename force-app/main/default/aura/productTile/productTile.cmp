@@ -1,0 +1,32 @@
+<aura:component controller="ProductTileController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global">
+
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute name="products" type="List"/>
+    <aura:attribute name="selectedBrand" type="String" />
+    <aura:attribute name="selectedCar" type="String" />
+    <aura:attribute name="selectedProduct" type="String" />
+    <aura:registerEvent name="carTileEvent" type="c:customEventComponent"/>
+
+    <aura:iteration items="{!v.products}" var="product">
+        <lightning:card class="selectedItemCard slds-m-top_medium" variant="Narrow" title="{!product.Name}">
+                            <aura:set attribute="actions">
+                                <span class="titleColor slds-text-heading_small">Select: </span>
+                                <input class="slds-radio" type="radio" aura:id="selectedProduct" name="product" value="{!product.Id}" 
+                                    checked="true" onchange="{!c.changeProduct}" />
+                            </aura:set>
+                            <div class="tDetails slds-p-horizontal_small">
+                                <h6>Credit Term: <div class="productValue"><span>{!product.Credit_Term__c} &nbsp;years</span></div></h6>
+                                <h6>Interest Rate: <div class="productValue"><span>{!product.Interest_Rate__c}</span></div></h6>
+                                <h6>Inital Payment: <div class="productValue"><span>{!product.Inital_Payment__c}</span></div></h6>
+                                <h6>KASKO: <div class="productValue"><span>50,000</span><span class="rub">Р</span></div></h6>
+                                <h6>Credit Amount: <div class="productValue"><span>2,538,000</span><span class="rub">Р</span></div></h6>
+                                <h6>Monthly Payment: <div class="productValue"><span></span><span class="rub">Р</span></div></h6>
+                            </div>
+        </lightning:card>
+        
+    </aura:iteration>
+
+    
+
+
+</aura:component>
