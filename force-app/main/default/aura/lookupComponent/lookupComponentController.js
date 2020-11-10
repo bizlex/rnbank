@@ -26,6 +26,9 @@
             }
             component.set('v.searchString',selectedRecord.label);
             component.set('v.value',selectedRecord.value);
+            console.log('value on child =', component.get('v.value'));
+            console.log('value on child =', typeof(component.get('v.value')));
+
             $A.util.removeClass(component.find('resultsDiv'),'slds-is-open');
         }
     },

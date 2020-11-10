@@ -3,7 +3,6 @@
     doInit : function( component, event, helper ) {
         $A.util.toggleClass(component.find('resultsDiv'),'slds-is-open');
         if( !$A.util.isEmpty(component.get('v.value')) ) {
-            console.log('v.value', component.get('v.value'));
             helper.searchRecordsHelper(component, event, helper, component.get('v.value'));
         }
     },
@@ -11,7 +10,6 @@
     // When a keyword is entered in search box
     searchRecords : function( component, event, helper ) {
         if( !$A.util.isEmpty(component.get('v.value')) ) {
-            console.log('v.value2', component.get('v.value'));
             helper.searchRecordsHelper( component, event, helper, '' );
         } else {
             $A.util.removeClass(component.find('resultsDiv'),'slds-is-open');
@@ -26,21 +24,15 @@
             if(index != -1) {
                 var selectedRecord = recordsList[index];
             }
-            // var selectedInn = component.get("v.selectedInn");
             component.set('v.searchString',selectedRecord.label);
             component.set('v.selectedInn',selectedRecord);
             var selectedInn = component.get("v.selectedInn");
-            console.log('v.selectedInn typeof ', typeof(selectedInn));
-            console.log('v.selectedInn  ', selectedInn);
-        
-            console.log('v.searchString', selectedRecord.label);
             var lookupInnEvent = component.getEvent("lookupInnEvent");
             lookupInnEvent.setParams({
                 "dataInn" : selectedInn
             });
             lookupInnEvent.fire();
             // component.set('v.value',selectedRecord.value);
-            // console.log('v.value', selectedRecord.value);
             $A.util.removeClass(component.find('resultsDiv'),'slds-is-open');
         }
     },

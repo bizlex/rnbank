@@ -1,0 +1,102 @@
+<aura:component access="GLOBAL" controller="CompleteAutoLoanController" 
+implements="force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes,force:hasRecordId,force:appHostable" >
+    <aura:html tag="style">
+        .cuf-content {
+            padding: 0 0rem !important;
+        }
+        .slds-p-around_medium {
+            padding: 0rem !important;
+        }
+        .slds-modal__content{
+            <!-- overflow-y:hidden !important; -->
+            height:unset !important;
+            max-height:unset !important;
+        }
+        .slds-modal__container {
+            width: 95%;
+            max-width: none;
+            min-width: 640px;
+        }
+    </aura:html>
+
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute name="isOpen" type="boolean" default="true"/>
+    <aura:attribute name="isSelect" type="boolean" default="false"/>
+    <aura:attribute name="chosenCase" type="String"/>
+    <aura:attribute name="stepNumber" type="String"/>
+    <aura:attribute name="data" type="Object"/>
+
+    <aura:if isTrue="{!v.isOpen}">
+        <div class="slds-align--absolute-center slds-m-around_medium">
+            <h1 style="font-size: 15px;">Please select one of the records:</h1> 
+        </div>
+        <div style="height: 200px" class="slds-m-around_medium">
+            <table class="slds-table slds-table_cell-buffer slds-no-row-hover slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <th class="">
+                            <div class="slds-truncate" title=""></div>
+                            </th>
+                        <th class="">
+                            <div class="slds-truncate" title="Application Number">Application Number</div>
+                        </th>
+                        <th class="">
+                            <div class="slds-truncate" title="Subject">Subject</div>
+                        </th>
+                        <th class="">
+                            <div class="slds-truncate" title="Stage Step">Stage Step</div>
+                        </th>
+                        <th class="">
+                            <div class="slds-truncate" title="Date/Time Opened">Date/Time Opened</div>
+                        </th>
+                        <th class="">
+                            <div class="slds-truncate" title="Select">Select</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.data}" var="item">
+                        <tr class="slds-hint-parent">
+                            <td class="slds-cell-edit" role="gridcell">
+                                <span class="slds-row-number slds-text-body_small slds-text-color_weak"></span>
+                            </td>
+                            <td class="slds-cell-edit">
+                                <span class="slds-grid slds-grid_align-spread">
+                                    <span class="slds-truncate">{!item.CaseNumber}</span>
+                                </span>
+                            </td>
+                            <td class="slds-cell-edit">
+                                <span class="slds-grid slds-grid_align-spread">
+                                    <span class="slds-truncate">{!item.Subject}</span>
+                                </span>
+                            </td>
+                            <td class="slds-cell-edit" >
+                                <span class="slds-grid slds-grid_align-spread">
+                                    <span class="slds-truncate">{!item.Stage_Step__c}</span>
+                                </span>
+                            </td>
+                            <td class="slds-cell-edit" >
+                                <span class="slds-grid slds-grid_align-spread">
+                                    <lightning:formattedDateTime value="{!item.CreatedDate}" year="numeric" 
+                                        month="numeric" day="numeric"/>
+                                </span>
+                            </td>
+                            <td class="slds-cell-edit" data-td-id="{!item.Id}">
+                                
+                                <span class="slds-grid slds-grid_align-spread">
+                                    <lightning:buttonIcon aura:id="buttonIcon" iconName="utility:check" variant="brand" 
+                                        alternativeText="{!item.Stage_Step__c}" title="Select" name="{!item.Id}" onclick="{!c.handleSelect}" />
+                                </span>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </div>
+        
+    </aura:if>
+    <aura:if isTrue="{!v.isSelect}">
+        <c:autoLoan caseId="{!v.chosenCase}" aura:id="autoLoanComponent" handleStep="{!v.stepNumber}" />
+    </aura:if>
+    
+</aura:component>

@@ -1,20 +1,40 @@
 public with sharing class AutoLoanController {
 
     @AuraEnabled
-    public static String save(Case caseData) {
-
-        String caseId = ''; 
+    public static Case save(Case caseData) { 
 
         try{
-            System.debug('caseData::::'+caseData);
             insert caseData;
-            caseId = caseData.Id;
         }
         catch(Exception ex){
-            return ex.getMessage();
+            System.debug('Case insert failed' + ex.getMessage());
         }
 
-        return caseId;
+        return caseData;
+    }
+
+    @AuraEnabled
+    public static void updateCase(Case caseData, String caseId) {
+
+        System.debug('caseData' + caseData);
+        System.debug('caseId' + caseId);
+
+        if (caseData.Id == caseId) {
+            try {
+                update caseData;
+            } catch (Exception e) {
+                System.debug('Case update failed' + e.getMessage());
+            }
+        } else {
+            System.debug('caseData.Id != caseId');
+
+            // updateOldCase(caseId);
+            // List<Case> oldCase = [SELECT Id FROM Case WHERE Id =:caseId];
+
+            // System.debug('oldCase = ' + oldCase);
+            // update oldCase;
+        }
+       
     }
 
     @AuraEnabled
@@ -31,42 +51,17 @@ public with sharing class AutoLoanController {
         
     }
 
-    public class ReturnInnWrapper {
-        @AuraEnabled public String name;
-        @AuraEnabled public String opf;
-    }
-
     @AuraEnabled
-    public static LookupComponentController.ReturnInnWrapper searchDadataInn(String item) {
-        HttpRequest req = getDaDataRequestInn(item);
-        Http h = new Http();
-        HttpResponse hresp = h.send(req);
-        String address = hresp.getBody();
-        address = address.replace('type', 'type_z');
-        address = address.replace('short', 'short_z');
-        DaDataInnWrapper parsedAddress = DaDataInnWrapper.parse(address);
-        LookupComponentController.ReturnInnWrapper qwe = new LookupComponentController.ReturnInnWrapper();
-        if (parsedAddress.suggestions.size() > 0) {
-            qwe.name = parsedAddress.suggestions[0].data.name.short_z;
-            qwe.opf = parsedAddress.suggestions[0].data.opf.short_z;
-        }
-        return qwe;
-    }
+    public static List<Case> getCaseById(String caseId) {
 
-    public static HttpRequest getDaDataRequestInn(String item) {
-        DaDataSettings__c objSet = DaDataSettings__c.getValues('Authorization');
-        String accToken = 'Token ' + objSet.API_key__c;
-        String secToken = objSet.Secret_key__c;
-        String endPoint = objSet.Endpoint_Org__c;
-        String jsonstring = '{"query":"' + item + '"}';
-        HttpRequest req = new HttpRequest();
-        req.setHeader('Content-Type','application/json');
-        req.setHeader('Accept','application/json');
-        req.setHeader('Authorization', accToken);
-        req.setHeader('X-Secret', secToken);
-        req.setMethod('POST');
-        req.setBody(jsonstring);
-        req.setEndpoint(endPoint);
-        return req;
+        System.debug('caseId getCaseById = ' + caseId);
+
+        return [
+            SELECT Id, Subject, Last_Name__c, Term__c, First_Name__c, Middle_Name__c,
+                Auto__c, Mobile_phone__c, ApplicantEmail__c
+            FROM Case 
+            WHERE Id =:caseId
+        ];
+        
     }
 }

@@ -1,9 +1,7 @@
 ({
 	searchRecordsHelper : function(component, event, helper, value) {
 		$A.util.removeClass(component.find("Spinner"), "slds-hide");
-        var value2 = component.get('v.value'),
-            boundFrom = component.get('v.boundFrom'),
-            boundTo = component.get('v.boundTo');
+        var value2 = component.get('v.value');
         component.set('v.message', '');
         component.set('v.recordsList', []);
         
@@ -16,15 +14,11 @@
             var result = response.getReturnValue();
             
         	if(response.getState() === 'SUCCESS') {
-                console.log('result', result);
-                // component.set("v.employerName", result.value);
     			if(result.length > 0) {
     				// To check if value attribute is prepopulated or not
 					if( $A.util.isEmpty(value) ) {
-                        console.log('v.recordsList', result);
                         component.set('v.recordsList',result);        
 					} else {
-                        console.log('v.selectedRecord', result[0]);
                         component.set('v.selectedRecord', result[0]);
 					}
     			} else {

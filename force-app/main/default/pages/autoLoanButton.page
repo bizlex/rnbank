@@ -1,0 +1,26 @@
+<apex:page standardController="Case" recordSetVar="cases">
+    <apex:includeLightning />
+
+    <span class="slds-m-around_large" style="font-size: 17px; margin-left: 40%">
+        <a href="javascript:void(0);" onclick="ns.doNav()">Please follow the link:
+        </a>
+    </span>
+
+    <span style="display: none">
+        <a id="stdNav" href="">Navigate</a>
+    </span>
+
+    <script>
+        (function (ns, undefined) {
+
+            ns.location = 'https://rnbank--rnbank.lightning.force.com/lightning/n/Complete_Auto_Loan';
+
+            ns.doNav = function () {
+                var anchorEl = document.getElementById('stdNav');
+                anchorEl.href = ns.location;
+                anchorEl.click();
+            }
+        })(window.ns = window.ns || {});
+
+    </script>
+</apex:page>
